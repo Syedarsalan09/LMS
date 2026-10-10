@@ -9,6 +9,7 @@ const Books = ({
   loadBooks,
   loadMyBooks,
   user,
+  isLoggedIn,
   loadingBooks,
   currentPage,
   totalPages,
@@ -106,28 +107,6 @@ const Books = ({
     (book) => book.status === "issued"
   ).length;
 
-  if (loadingBooks) {
-    return (
-      // ✅ CORRECTED: Added missing opening div
-      <div className="text-center mt-5">
-
-        <div
-          className="spinner-border"
-          role="status"
-        >
-          <span className="visually-hidden">
-            Loading...
-          </span>
-        </div>
-
-        <p className="mt-3">
-          Loading books...
-        </p>
-
-      </div>
-    );
-  }
-
   return (
     <>
       <h2 className="text-center mb-4">
@@ -214,7 +193,7 @@ const Books = ({
           </div>
         </div>
 
-        {user.role !== "admin" && (
+        {isLoggedIn && user.role !== "admin" && (
           <div className="col-md-4">
             <div className="card shadow border-warning">
               <div className="card-body text-center">
@@ -231,13 +210,26 @@ const Books = ({
 
       <div className="row">
 
-        {books.length ? (
+        {loadingBooks ? (
+          <div className="col-12 text-center mt-4">
+            <div
+              className="spinner-border"
+              role="status"
+            >
+              <span className="visually-hidden">
+                Loading...
+              </span>
+            </div>
+            <p className="mt-3">Loading books...</p>
+          </div>
+        ) : books.length ? (
           books.map((book) => (
             <BookCard
               key={book._id}
               book={book}
               issueBook={issueBook}
               user={user}
+              isLoggedIn={isLoggedIn}
             />
           ))
         ) : (

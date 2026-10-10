@@ -2,10 +2,9 @@ import Issue from "../models/Issue.js";
 import Book from "../models/Book.js";
 import User from "../models/User.js";
 import nodemailer from "nodemailer";
+import { isValidObjectId } from "../utils/validation.js";
 
-// ===============================
-// Issue a Book
-// ===============================
+
 // ===============================
 // Issue a Book
 // ===============================
@@ -23,6 +22,12 @@ export const issueBook = async (req, res) => {
     if (!bookId) {
       return res.status(400).json({
         message: "Book ID is required.",
+      });
+    }
+
+    if (!isValidObjectId(bookId)) {
+      return res.status(400).json({
+        message: "Invalid book ID.",
       });
     }
 
@@ -181,6 +186,12 @@ try {
 // ===============================
 export const returnBook = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.issueId)) {
+      return res.status(400).json({
+        message: "Invalid issue ID.",
+      });
+    }
+
     const issue = await Issue.findById(req.params.issueId);
 
     if (!issue) {
@@ -239,48 +250,48 @@ export const returnBook = async (req, res) => {
       await book.save();
     }
 
-    // Get student details
-const user = await User.findById(req.user.id);
+        const user = await User.findById(req.user.id);
 
-// Create email transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+        try {
+          if (!user) {
+            throw new Error("The account for this return could not be found.");
+          }
 
-// Send return confirmation email
-await transporter.sendMail({
-  from: process.env.EMAIL_USER,
-  to: user.email,
-  subject: "Book Returned Successfully",
-  html: `
-    <h2>Hello ${user.name},</h2>
+          const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASS,
+            },
+          });
 
-    <p>Your book has been returned successfully.</p>
-
-    <h3>Book Details</h3>
-
-    <p><strong>Title:</strong> ${book ? book.title : issue.bookSnapshot.title}</p>
-    <p><strong>Author:</strong> ${book ? book.author : issue.bookSnapshot.author}</p>
-
-    <p><strong>Return Date:</strong> ${new Date(issue.returnDate).toDateString()}</p>
-
-    <p><strong>Fine:</strong> ₹${issue.fine}</p>
-
-    ${
-      issue.fine > 0
-        ? "<p>Please pay the outstanding fine to the library.</p>"
-        : "<p>No fine has been charged. Thank you for returning the book on time.</p>"
-    }
-
-    <br/>
-
-    <p>Library Management System</p>
-  `,
-});
+          await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: user.email,
+            subject: "Book Returned Successfully",
+            html: `
+              <h2>Hello ${user.name},</h2>
+              <p>Your book has been returned successfully.</p>
+              <h3>Book Details</h3>
+              <p><strong>Title:</strong> ${book ? book.title : issue.bookSnapshot.title}</p>
+              <p><strong>Author:</strong> ${book ? book.author : issue.bookSnapshot.author}</p>
+              <p><strong>Return Date:</strong> ${new Date(issue.returnDate).toDateString()}</p>
+              <p><strong>Fine:</strong> ₹${issue.fine}</p>
+              ${
+                issue.fine > 0
+                  ? "<p>Please pay the outstanding fine to the library.</p>"
+                  : "<p>No fine has been charged. Thank you for returning the book on time.</p>"
+              }
+              <br/>
+              <p>Library Management System</p>
+            `,
+          });
+        } catch (emailError) {
+          console.error(
+            "Return confirmation email delivery failed:",
+            emailError.code || emailError.message
+          );
+        }
 
 
     res.status(200).json({

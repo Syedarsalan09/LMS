@@ -1,5 +1,6 @@
 import Book from "../models/Book.js";
 import Issue from "../models/Issue.js";
+import { isValidObjectId } from "../utils/validation.js";
 
 // ==============================
 // Add New Book
@@ -334,12 +335,13 @@ export const getBooks = async (req, res) => {
     const booksWithIssueStatus =
       await Promise.all(
         books.map(async (book) => {
-          const alreadyIssued =
-            await Issue.exists({
-              user: req.user.id,
-              book: book._id,
-              status: "issued",
-            });
+          const alreadyIssued = req.user?.id
+            ? await Issue.exists({
+                user: req.user.id,
+                book: book._id,
+                status: "issued",
+              })
+            : false;
 
           return {
             ...book.toObject(),
@@ -515,6 +517,12 @@ const books = await Book.find(filter)
 // ==============================
 export const getBookById = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid book ID.",
+      });
+    }
+
     const book = await Book.findById(req.params.id);
 
     if (!book) {
@@ -577,6 +585,12 @@ export const searchBooks = async (req, res) => {
 // ==============================
 export const updateBook = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid book ID.",
+      });
+    }
+
     const {
     totalCopies,
     } = req.body;
@@ -678,6 +692,12 @@ if (totalCopies !== undefined) {
 // ==============================
 export const deleteBook = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid book ID.",
+      });
+    }
+
     const activeIssue = await Issue.findOne({
       book: req.params.id,
       status: "issued",

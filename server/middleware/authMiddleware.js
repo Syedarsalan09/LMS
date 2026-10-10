@@ -32,4 +32,23 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
+export const optionalAuthMiddleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader?.startsWith("Bearer ")) {
+    return next();
+  }
+
+  try {
+    req.user = jwt.verify(
+      authHeader.split(" ")[1],
+      process.env.JWT_SECRET
+    );
+  } catch {
+    // Invalid or expired tokens should not prevent public book browsing.
+  }
+
+  return next();
+};
+
 export default authMiddleware;

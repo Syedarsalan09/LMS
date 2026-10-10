@@ -33,24 +33,23 @@ const MyBooks = ({
   // Search / Filter / Sort
   // ===============================
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      loadMyBooks(
-        1,
-        search,
-        category,
-        sortBy
-      );
-    }, 300);
+ useEffect(() => {
+  const timer = setTimeout(() => {
+    loadMyBooks(
+      1,
+      search,
+      category,
+      sortBy
+    );
+  }, 500);
 
-    return () =>
-      clearTimeout(timer);
-  }, [
-    search,
-    category,
-    sortBy,
-    loadMyBooks,
-  ]);
+  return () => clearTimeout(timer);
+}, [
+  search,
+  category,
+  sortBy,
+  loadMyBooks
+]);
 
   // ===============================
   // Load Categories
@@ -105,42 +104,12 @@ const MyBooks = ({
   };
 
   // ===============================
-  // Loading
-  // ===============================
-
-  if (loadingMyBooks) {
-    return (
-      <div className="container text-center mt-5">
-
-        <div
-          className="spinner-border text-primary"
-          role="status"
-        >
-          <span className="visually-hidden">
-            Loading...
-          </span>
-        </div>
-
-        <p className="mt-3">
-          Loading your books...
-        </p>
-
-      </div>
-    );
-  }
-
-  // ===============================
   // Statistics
   // ===============================
 
   const issuedBooks = myBooks.filter(
     (book) =>
       book.status === "issued"
-  ).length;
-
-  const returnedBooks = myBooks.filter(
-    (book) =>
-      book.status === "returned"
   ).length;
 
   const totalFines = myBooks.reduce(
@@ -164,15 +133,13 @@ const MyBooks = ({
 
         <div className="col-md-5">
 
-          <input
-            type="text"
-            className="form-control"
-            placeholder="🔍 Search by title, author or category..."
-            value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
-          />
+      <input
+  type="text"
+  className="form-control"
+  placeholder="🔍 Search by title, author or category..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+/>
 
         </div>
 
@@ -295,7 +262,19 @@ const MyBooks = ({
           Books
       =============================== */}
 
-      {myBooks.length === 0 ? (
+      {loadingMyBooks ? (
+        <div className="text-center mt-5">
+          <div
+            className="spinner-border text-primary"
+            role="status"
+          >
+            <span className="visually-hidden">
+              Loading...
+            </span>
+          </div>
+          <p className="mt-3">Loading your books...</p>
+        </div>
+      ) : myBooks.length === 0 ? (
 
         <div className="text-center mt-5">
 

@@ -23,10 +23,6 @@ const Footer = () => {
               © 2026 Library Management System
             </p>
 
-            <p className="text-secondary">
-              Built by Arsalan
-            </p>
-
           </div>
 
         </div>

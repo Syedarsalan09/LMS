@@ -11,18 +11,20 @@ import {
   getCategories,
 } from "../controllers/bookController.js";
 
-import protect from "../middleware/authMiddleware.js";
+import protect, {
+  optionalAuthMiddleware,
+} from "../middleware/authMiddleware.js";
 import adminOnly from "../middleware/adminMiddleware.js";
 import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
 // ==========================
-// Public / Logged-in Users
+// Public book browsing; all write/admin routes remain protected.
 // ==========================
 
 // Get all books
-router.get("/", protect, getBooks);
+router.get("/", optionalAuthMiddleware, getBooks);
 
 router.get(
   "/admin",
@@ -33,12 +35,12 @@ router.get(
 
 router.get("/all", protect, adminOnly, getAllBooks);
 
-router.get("/search", protect, searchBooks);
+router.get("/search", optionalAuthMiddleware, searchBooks);
 
-router.get("/categories", protect, getCategories);
+router.get("/categories", optionalAuthMiddleware, getCategories);
 
 // Get single book
-router.get("/:id", protect, getBookById);
+router.get("/:id", optionalAuthMiddleware, getBookById);
 
 // ==========================
 // Admin Only

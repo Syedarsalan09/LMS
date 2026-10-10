@@ -8,10 +8,17 @@ const ResetPassword = () => {
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (newPassword !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       const response = await resetPassword(token, {
         newPassword,
@@ -26,6 +33,8 @@ const ResetPassword = () => {
         error.response?.data?.message ||
           "Something went wrong."
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -56,6 +65,7 @@ const ResetPassword = () => {
               onChange={(e) =>
                 setNewPassword(e.target.value)
               }
+              autoComplete="new-password"
               required
             />
 
@@ -74,6 +84,7 @@ const ResetPassword = () => {
               onChange={(e) =>
                 setConfirmPassword(e.target.value)
               }
+              autoComplete="new-password"
               required
             />
 
@@ -82,8 +93,9 @@ const ResetPassword = () => {
           <button
             type="submit"
             className="btn btn-success w-100"
+            disabled={isSubmitting}
           >
-            Reset Password
+            {isSubmitting ? "Resetting..." : "Reset Password"}
           </button>
 
         </form>

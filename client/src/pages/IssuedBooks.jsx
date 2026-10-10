@@ -18,7 +18,11 @@ const IssuedBooks = () => {
   }, []);
 
   useEffect(() => {
-    loadIssues();
+    const timer = setTimeout(() => {
+      void loadIssues();
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [loadIssues]);
 
   const formatDate = (date) => {

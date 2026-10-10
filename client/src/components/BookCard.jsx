@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-const BookCard = ({ book, issueBook, user }) => {
+const BookCard = ({ book, issueBook, user, isLoggedIn }) => {
   const inStock = book.availableCopies > 0;
 
   return (
@@ -72,17 +72,35 @@ const BookCard = ({ book, issueBook, user }) => {
 
           {/* Show Issue button ONLY for students */}
           {user?.role !== "admin" && (
-           <button
-  className="btn btn-success w-100 mb-2"
-  disabled={!inStock || book.alreadyIssued}
-  onClick={() => issueBook(book)}
->
-  {book.alreadyIssued
-    ? "Already Issued"
-    : inStock
-    ? "Issue Book"
-    : "Unavailable"}
-</button>
+            isLoggedIn ? (
+              <button
+                className="btn btn-success w-100 mb-2"
+                disabled={!inStock || book.alreadyIssued}
+                onClick={() => issueBook(book)}
+              >
+                {book.alreadyIssued
+                  ? "Already Issued"
+                  : inStock
+                    ? "Issue Book"
+                    : "Unavailable"}
+              </button>
+            ) : (
+              inStock ? (
+                <Link
+                  to="/login"
+                  className="btn btn-success w-100 mb-2"
+                >
+                  Login to Issue
+                </Link>
+              ) : (
+                <button
+                  className="btn btn-outline-secondary w-100 mb-2"
+                  disabled
+                >
+                  Unavailable
+                </button>
+              )
+            )
           )}
 
           <Link

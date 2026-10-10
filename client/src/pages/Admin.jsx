@@ -37,6 +37,7 @@ import { sendReminderEmails } from "../services/reminderService";
   const [image, setImage] = useState(null);
 
   const [editId, setEditId] = useState(null);
+  const [isBookFormOpen, setIsBookFormOpen] = useState(false);
 
   useEffect(() => {
   const timer = setTimeout(() => {
@@ -60,6 +61,20 @@ useEffect(() => {
 
   loadCategories();
 }, []);
+
+  const resetBookForm = () => {
+    setEditId(null);
+    setTitle("");
+    setAuthor("");
+    setCategory("");
+    setQuantity("");
+    setIsbn("");
+    setPublisher("");
+    setPublishedYear("");
+    setDescription("");
+    setImage(null);
+    setIsBookFormOpen(false);
+  };
 
   const addBook = async (e) => {
     e.preventDefault();
@@ -112,15 +127,7 @@ await createBook(formData);
     return;
   }
 
-    setTitle("");
-    setAuthor("");
-    setCategory("");
-    setQuantity("");
-    setIsbn("");
-    setPublisher("");
-    setPublishedYear("");
-    setDescription("");
-    setImage(null);
+    resetBookForm();
     alert("Book Added Successfully!");
   };
 
@@ -150,6 +157,7 @@ alert("Book Deleted Successfully!");
 
     const editBook = (book) => {
     setEditId(book._id);
+    setIsBookFormOpen(true);
     setImage(null);
     setTitle(book.title);
     setAuthor(book.author);
@@ -209,16 +217,7 @@ alert("Book Deleted Successfully!");
 
     await loadBooks(currentPage, search);
 
-    setEditId(null);
-    setTitle("");
-    setAuthor("");
-    setCategory("");
-    setQuantity("");
-    setIsbn("");
-    setPublisher("");
-    setPublishedYear("");
-    setDescription("");
-    setImage(null);
+    resetBookForm();
 
     alert("Book Updated Successfully!");
   } catch (error) {
@@ -260,7 +259,7 @@ const exportUsers = async () => {
   try {
     const file = await downloadUsersReport();
     downloadFile(file, "Users.xlsx");
-  } catch (error) {
+  } catch {
     alert("Failed to export users.");
   }
 };
@@ -269,7 +268,7 @@ const exportBooks = async () => {
   try {
     const file = await downloadBooksReport();
     downloadFile(file, "Books.xlsx");
-  } catch (error) {
+  } catch {
     alert("Failed to export books.");
   }
 };
@@ -278,7 +277,7 @@ const exportIssuedBooks = async () => {
   try {
     const file = await downloadIssuedBooksReport();
     downloadFile(file, "IssuedBooks.xlsx");
-  } catch (error) {
+  } catch {
     alert("Failed to export issued books.");
   }
 };
@@ -287,7 +286,7 @@ const exportFines = async () => {
   try {
     const file = await downloadFinesReport();
     downloadFile(file, "Fines.xlsx");
-  } catch (error) {
+  } catch {
     alert("Failed to export fines.");
   }
 };
@@ -311,17 +310,17 @@ const handleSendReminders = async () => {
       <h2 className="mb-4 text-center">Admin Panel</h2>
       <div className="card shadow-sm p-3 mb-4">
 
-     <input
-       type="text"
-       className="form-control"
-       placeholder="🔍 Search by title, author or category..."
-       value={search}
-       onChange={(e) => setSearch(e.target.value)}
-     />
+     <div className="mb-3">
+       <input
+         type="text"
+         className="form-control"
+         placeholder="🔍 Search by title, author or category..."
+         value={search}
+         onChange={(e) => setSearch(e.target.value)}
+       />
+     </div>
 
-     <hr />
-
-     <div className="row mb-4">
+     <div className="row mb-0">
 
   <div className="col-md-4">
 
@@ -377,147 +376,168 @@ const handleSendReminders = async () => {
 
 
 
-      <form onSubmit={editId ? updateBook : addBook} className="card p-4 shadow">
-
-        <div className="mb-3">
-          <label className="form-label">Book Title</label>
-          <input
-            type="text"             
-            className="form-control"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Author</label>
-          <input
-            type="text"
-            className="form-control"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-          />
-        </div>
-
-        <div className="mb-3">
-  <label className="form-label">ISBN</label>
-
-  <input
-    type="text"
-    className="form-control"
-    value={isbn}
-    onChange={(e) => setIsbn(e.target.value)}
-    placeholder="9780061122415"
-  />
-</div>
-
-<div className="mb-3">
-  <label className="form-label">Publisher</label>
-
-  <input
-    type="text"
-    className="form-control"
-    value={publisher}
-    onChange={(e) => setPublisher(e.target.value)}
-    placeholder="HarperOne"
-  />
-</div>
-
-<div className="mb-3">
-  <label className="form-label">Published Year</label>
-
-  <input
-    type="number"
-    className="form-control"
-    value={publishedYear}
-    onChange={(e) => setPublishedYear(e.target.value)}
-    placeholder="1988"
-  />
-</div>
-
-<div className="mb-3">
-  <label className="form-label">Description</label>
-
-  <textarea
-    className="form-control"
-    rows="4"
-    value={description}
-    onChange={(e) => setDescription(e.target.value)}
-    placeholder="Enter book description..."
-  />
-</div>
-
-        <div className="mb-3">
- <div className="mb-3">
-  <label className="form-label">
-    Book Cover Image
-  </label>
-
-  <input
-    type="file"
-    accept="image/*"
-    className="form-control"
-    onChange={(e) => setImage(e.target.files[0])}
-  />
-</div>
-    </div>
-
-        <div className="mb-3">
-          <label className="form-label">Category</label>
-          <select
-              className="form-select"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+      {isBookFormOpen && (
+        <>
+          <div
+            className="modal-backdrop fade show"
+            onClick={resetBookForm}
+          ></div>
+          <div
+            className="modal fade show d-block"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="book-form-title"
+            tabIndex="-1"
+            onClick={resetBookForm}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                resetBookForm();
+              }
+            }}
           >
-             <option value="">Select Category</option>
-             <option value="Programming">Programming</option>
-             <option value="MongoDB">MongoDB</option>
-            <option value="Database">Database</option>
-            <option value="Networking">Networking</option>
-            <option value="Artificial Intelligence">Artificial Intelligence</option>
-          </select>
-        </div>
+            <div
+              className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="modal-content">
+                <form onSubmit={editId ? updateBook : addBook}>
+                  <div className="modal-header">
+                    <h5 className="modal-title" id="book-form-title">
+                      {editId ? "Edit Book" : "Add Book"}
+                    </h5>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      aria-label="Close"
+                      onClick={resetBookForm}
+                    ></button>
+                  </div>
+                  <div className="modal-body p-3">
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <label className="form-label">Book Title</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          required
+                        />
+                      </div>
 
-        <div className="mb-3">
-          <label className="form-label">Quantity</label>
-          <input
-            type="number"
-            min="0"
-            className="form-control"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-         />
-        </div>
+                      <div className="col-md-6">
+                        <label className="form-label">Author</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={author}
+                          onChange={(e) => setAuthor(e.target.value)}
+                          required
+                        />
+                      </div>
 
-       <button className="btn btn-success w-100">
-       <i className={`bi ${editId ? "bi-pencil-square" : "bi-plus-circle"}`}></i>{" "}
-       {editId ? "Update Book" : "Add Book"}
-       </button>
+                      <div className="col-md-6">
+                        <label className="form-label">ISBN</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={isbn}
+                          onChange={(e) => setIsbn(e.target.value)}
+                          placeholder="9780061122415"
+                          required
+                        />
+                      </div>
 
-       {editId && (
-        <button
-        type="button"
-        className="btn btn-secondary mt-2 w-100"
-        onClick={() => {
-          setEditId(null);
-          setTitle("");
-          setAuthor("");
-          setCategory("");
-          setQuantity("");
-          setIsbn("");
-          setPublisher("");
-          setPublishedYear("");
-          setDescription("");
-          setImage(null);
-        }}
-      >
-        Cancel
-      </button>
-    )}
+                      <div className="col-md-6">
+                        <label className="form-label">Publisher</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={publisher}
+                          onChange={(e) => setPublisher(e.target.value)}
+                          placeholder="HarperOne"
+                          required
+                        />
+                      </div>
 
-      </form>
+                      <div className="col-md-6">
+                        <label className="form-label">Published Year</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={publishedYear}
+                          onChange={(e) => setPublishedYear(e.target.value)}
+                          placeholder="1988"
+                          required
+                        />
+                      </div>
 
-      <hr className="my-5" />
+                      <div className="col-md-6">
+                        <label className="form-label">Category</label>
+                        <select
+                          className="form-select"
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          required
+                        >
+                          <option value="">Select Category</option>
+                          <option value="Programming">Programming</option>
+                          <option value="MongoDB">MongoDB</option>
+                          <option value="Database">Database</option>
+                          <option value="Networking">Networking</option>
+                          <option value="Artificial Intelligence">Artificial Intelligence</option>
+                        </select>
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label">Quantity</label>
+                        <input
+                          type="number"
+                          min="1"
+                          className="form-control"
+                          value={quantity}
+                          onChange={(e) => setQuantity(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label">Book Cover Image</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="form-control"
+                          onChange={(e) => setImage(e.target.files[0])}
+                        />
+                      </div>
+
+                      <div className="col-12">
+                        <label className="form-label">Description</label>
+                        <textarea
+                          className="form-control"
+                          rows="2"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Enter book description..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-outline-secondary" onClick={resetBookForm}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-success">
+                      <i className={`bi ${editId ? "bi-pencil-square" : "bi-plus-circle"} me-1`}></i>
+                      {editId ? "Update Book" : "Add Book"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="card shadow mt-4 mb-5">
   <div className="card-body">
@@ -566,7 +586,20 @@ const handleSendReminders = async () => {
   </div>
 </div>
 
-      <h3 className="mb-3">Library Books</h3>
+      <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 p-3 mb-3 bg-light border rounded-3 shadow-sm">
+        <div>
+          <h3 className="mb-1">Library Books</h3>
+          <p className="text-muted mb-0">Manage your library collection</p>
+        </div>
+        <button
+          type="button"
+          className="btn btn-primary btn-lg px-4 shadow-sm"
+          onClick={() => setIsBookFormOpen(true)}
+        >
+          <i className="bi bi-plus-circle me-2"></i>
+          Add Book
+        </button>
+      </div>
 
      <div className="row">
 

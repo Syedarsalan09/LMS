@@ -206,26 +206,17 @@ const loadAdminBooks = useCallback(
   // ==========================
 
 useEffect(() => {
-  if (!isLoggedIn) {
-    setBooks([]);
-    setAdminBooks([]);
-    setMyBooks([]);
+  const timer = setTimeout(() => {
+    void loadBooks(1);
 
-    setCurrentPage(1);
-    setAdminCurrentPage(1);
+    if (isLoggedIn && user.role === "admin") {
+      void loadAdminBooks(1);
+    } else if (isLoggedIn) {
+      void loadMyBooks(1);
+    }
+  }, 0);
 
-    return;
-  }
-
-  // Student / normal Books pagination
-  loadBooks(1);
-
-  // Admin pagination
-  if (user.role === "admin") {
-    loadAdminBooks(1);
-  } else {
-    loadMyBooks(1);
-  }
+  return () => clearTimeout(timer);
 }, [
   isLoggedIn,
   user.role,
@@ -268,9 +259,10 @@ useEffect(() => {
           <Route
             path="/"
             element={
-              <Home 
-                books={books} 
+              <Home
+                books={books}
                 loadingBooks={loadingBooks}
+                isLoggedIn={isLoggedIn}
              />
             }
           />
@@ -282,6 +274,7 @@ useEffect(() => {
   books={books}
   loadingBooks={loadingBooks}
   myBooks={myBooks}
+  isLoggedIn={isLoggedIn}
   loadBooks={loadBooks}
   loadMyBooks={loadMyBooks}
   user={user}
